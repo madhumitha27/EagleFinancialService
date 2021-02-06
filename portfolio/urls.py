@@ -21,5 +21,6 @@ urlpatterns = [
 
     path('stock/create/', views.stock_new, name='stock_new'),
     path('investment/create/', views.investment_new, name='investment_new'),
+    path('customer/create/', views.customer_new, name='customer_new'),
 
 ]
