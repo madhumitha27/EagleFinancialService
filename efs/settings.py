@@ -132,11 +132,12 @@ LOGIN_REDIRECT_URL = '/home'
 LOGOUT_REDIRECT_URL='/home'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'madaad87@gmail.com'
-EMAIL_HOST_PASSWORD = 'pythonanywhere@123'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD =os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+DEFAULT_FROM_EMAIL = 'GoodSpheredfoodpantryTeam<noreply@pantry.com>'
 
 django_heroku.settings(locals())
 
