@@ -2,7 +2,9 @@
 {% block content %}
 
 <html lang="en">
-       <body>
+    <body>
+
+    <body>
     <style>
         body {
             background-color: beige;
@@ -39,10 +41,10 @@
                     <td>{{ investment.recent_value }}</td>
                     <td>{{ investment.recent_date }}</td>
                     <td><a href="{% url 'portfolio:investment_edit' pk=investment.pk %}"
-                           class="btn btn-warning">Edit</a></td>
+                           class="btn btn-primary">Edit</a></td>
                     <td><a href="{% url 'portfolio:investment_delete' pk=investment.pk %}"
                     onclick="return confirm('Are you sure you want to delete?')"
-                    class="btn btn-danger">Delete</a>
+                    class="btn btn-primary">Delete</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -55,6 +57,6 @@
         </div>
     </div>
     </body>
-</html>
+    </html>
 {% endblock %}
 

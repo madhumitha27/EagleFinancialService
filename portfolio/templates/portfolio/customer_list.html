@@ -1,15 +1,11 @@
 {% extends 'portfolio/base.html' %}
 {% block content %}
-
+<!DOCTYPE html>
 <html lang="en">
+<body>
 
 <body>
-<style>
 
-        body {
-            background-color: beige;
-        }
-</style>
 
   <header class="jumbotron my-4 table-responsive" style="background: white">
       <p class="lead text-nowrap"><b>Eagle Financial Services, your Midwest Financial Services Partner</b></p>
@@ -31,7 +27,7 @@
                 <th>Zip</th>
                 <th>Primary Email</th>
                 <th>Cell Phone</th>
-                <th colspan="3">Actions</th>
+                <th colspan="7">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -45,20 +41,22 @@
                     <td>{{ customer.zipcode }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.cell_phone }}</td>
-                    <td><a href="{% url 'portfolio:customer_edit' pk=customer.pk %}" class="btn btn-warning">Edit</a>
+                    <td><a href="{% url 'portfolio:customer_edit' pk=customer.pk %}" class="btn btn-primary">Edit</a>
                      <td><a href="{% url 'portfolio:customer_delete' pk=customer.pk %}"
                            onclick="return confirm('Are you sure you want to delete?')"
-                           class="btn btn-danger">Delete</a>
+                           class="btn btn-primary">Delete</a>
                     </td>
-
+                    <td><a href="{% url 'portfolio:portfolio' pk=customer.pk %}"
+                           class="btn btn-primary">Portfolio</a>
+                    <td><a href="{% url 'portfolio:download_portfolio' pk=customer.pk %}"
+                           class="btn btn-primary">Download Portfolio as PDF</a>
+                    <td><a href="{% url 'portfolio:sendemailpdf' pk=customer.pk %}"
+                           class="btn btn-primary">Send Email</a>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
-          <div class="row">
-            <a href="{% url 'portfolio:customer_new' %}" class="row"><span
-                    class="btn btn-primary">Add Customer</span></a>
-        </div>
+
     </div>
 
 </body>

@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'portfolio',
-    'crispy_forms'
+    'crispy_forms',
+    'rest_framework',
+    'mathfilters',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -127,5 +130,13 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/home'
 LOGOUT_REDIRECT_URL='/home'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'madaad87@gmail.com'
+EMAIL_HOST_PASSWORD = 'pythonanywhere@123'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
 django_heroku.settings(locals())
 

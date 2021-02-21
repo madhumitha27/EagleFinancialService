@@ -11,4 +11,10 @@
     {% csrf_token %}
     <p><input type="submit" value="Log-in"></p>
   </form>
+  <div class="card-footer text-center">
+        <div class="small"><a href="{% url 'password_reset' %}">Forgot Password?</a></div>
+  </div>
+  <div class="card-footer text-center">
+    <div class="small"><a href="{% url 'portfolio:register' %}">Need an account? Sign up!</a></div>
+  </div>
 {% endblock %}
