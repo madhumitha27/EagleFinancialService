@@ -175,7 +175,7 @@ def sendemailpdf(request,pk):
     return render(request, 'portfolio/emailsuccess.html')
 
 def sendEmail(pdf,email):
-     subject = "Application List "
+     subject = "Portfolio Summary Page"
      content = {}
      from_email = settings.EMAIL_HOST_USER
      message = EmailMultiAlternatives(subject=subject, body="Welcome.. Please find the attached portfolio pdf", from_email=from_email,
