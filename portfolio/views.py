@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.template.loader import get_template
 from reportlab.pdfgen import canvas
@@ -8,7 +9,7 @@ from .forms import *
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from .utils import render_to_pdf, render_to_pdf_email
+from .utils import render_to_pdf
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -39,9 +40,17 @@ class CustomerByNumber(APIView):
 
 @login_required
 def customer_list(request):
-    customer = Customer.objects.filter(created_date__lte=timezone.now())
+    customer = Customer.objects.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(customer, 2)
+    try:
+        customer_list = paginator.page(page)
+    except PageNotAnInteger:
+        customer_list = paginator.page(1)
+    except EmptyPage:
+        customer_list = paginator.page(paginator.num_pages)
     return render(request, 'portfolio/customer_list.html',
-                     {'customers': customer})
+                     {'customers': customer_list})
 
 def register(request):
     print("entered into register view method")
@@ -51,10 +60,10 @@ def register(request):
         if form.is_valid():
             userObj =form.save()
             my_group = Group.objects.get(name=form.cleaned_data['group'])
+            print('my_group',my_group)
             userObj.groups.add(my_group)
-            mystr_group=str(my_group)
-            print('my_group', mystr_group)
-            if mystr_group == "advisor":
+
+            if (my_group == "advisor"):
                 print("advisor...")
                 userObj.is_staff=True
                 userObj.is_superuser = True
@@ -93,26 +102,21 @@ def returnPDF(pk):
 
     stock_result = 0
     stock_result_INR = 0
-    investment_result = 0
-    investment_result_INR = 0
+    investment_result=0
+    investment_result_INR=0
 
-    sum_portfolio_intial_investments = 0
-    sum_portfolio_intial_investments_INR = 0
-    sum_portfolio_current_investments = 0
-    sum_portfolio_current_investments_INR = 0
-    grand_total_results = 0
-    grand_total_results_INR = 0
-    cur_rate = 0;
     # Loop through each stock and add the value to the total
     for stock in stocks:
-        sum_current_stocks_value += stock.current_stock_value()
+        print('stock-',stock)
+        ccValue=stock.current_stock_value()
+        print('ccValue->',ccValue)
+        sum_current_stocks_value += ccValue
         sum_of_initial_stock_value += stock.initial_stock_value()
-        cur_rate = stock.currency_rate()
     stock_result = sum_current_stocks_value - sum_of_initial_stock_value
     # COnverting Stocks to INR
-    sum_of_initial_stock_value_INR = "{:.2f}".format(float(sum_current_stocks_value) * cur_rate)
-    sum_current_stocks_value_INR = "{:.2f}".format(float(sum_of_initial_stock_value) * cur_rate)
-    stock_result_INR = float(stock_result) * cur_rate
+    sum_of_initial_stock_value_INR = float(sum_current_stocks_value) * stock.currency_rate()
+    sum_current_stocks_value_INR = float(sum_of_initial_stock_value) * stock.currency_rate()
+    stock_result_INR = float(stock_result) * stock.currency_rate()
 
     for investment in investments:
         sum_current_investment_value += investment.recent_value
@@ -120,21 +124,15 @@ def returnPDF(pk):
 
     investment_result = sum_current_investment_value - sum_of_initial_investment_value
     # COnverting Investments to INR
-    sum_current_investment_value_INR = "{:.2f}".format(float(sum_current_investment_value) * cur_rate)
-    sum_of_initial_investment_value_INR = "{:.2f}".format(float(sum_of_initial_investment_value) * cur_rate)
-    investment_result_INR = float(investment_result) * cur_rate
+    sum_current_investment_value_INR = float(sum_current_investment_value) * stock.currency_rate()
+    sum_of_initial_investment_value_INR = float(sum_of_initial_investment_value) * stock.currency_rate()
+    investment_result_INR = float(investment_result) * stock.currency_rate()
 
-    sum_portfolio_intial_investments = float(sum_of_initial_stock_value) + float(sum_of_initial_investment_value)
-    sum_portfolio_intial_investments_INR = "{:.2f}".format(float(sum_portfolio_intial_investments) * cur_rate)
-    sum_portfolio_current_investments = float(sum_current_stocks_value) + float(sum_current_investment_value)
-    sum_portfolio_current_investments_INR = "{:.2f}".format(float(sum_portfolio_current_investments) * cur_rate)
-    grand_total_results = float(stock_result) + float(investment_result)
-    grand_total_results_INR = "{:.2f}".format(float(grand_total_results) * cur_rate)
     context = {'customers': customers, 'investments': investments, 'stocks': stocks,
                # 'sum_acquired_value': sum_acquired_value,
                # 'sum_recent_value': sum_recent_value, # 'overall_investment_results':overall_investment_results,
-               'investment_result': investment_result, 'investment_result_INR': investment_result_INR,
-               'stock_result': stock_result, 'stock_result_INR': stock_result_INR,
+               'investment_result': investment_result,'investment_result_INR': investment_result_INR,
+               'stock_result': stock_result,'stock_result_INR': stock_result_INR,
                'sum_current_investment_value': sum_current_investment_value,
                'sum_of_initial_investment_value': sum_of_initial_investment_value,
                'sum_current_investment_value_INR': sum_current_investment_value_INR,
@@ -142,20 +140,17 @@ def returnPDF(pk):
                'sum_current_stocks_value': sum_current_stocks_value,
                'sum_of_initial_stock_value': sum_of_initial_stock_value,
                'sum_of_initial_stock_value_INR': sum_of_initial_stock_value_INR,
-               'sum_current_stocks_value_INR': sum_current_stocks_value_INR,
-               'sum_portfolio_intial_investments': sum_portfolio_intial_investments,
-               'sum_portfolio_intial_investments_INR': sum_portfolio_intial_investments_INR,
-               'sum_portfolio_current_investments': sum_portfolio_current_investments,
-               'sum_portfolio_current_investments_INR': sum_portfolio_current_investments_INR,
-               'grand_total_results': grand_total_results,
-               'grand_total_results_INR': grand_total_results_INR}
+               'sum_current_stocks_value_INR': sum_current_stocks_value_INR
+               }
 
-    return context
+    template = get_template('portfolio/DownloadPortfolio.html')
+    print('Value-->', pk)
+    pdf = render_to_pdf('portfolio/DownloadPortfolio.html', context)
 
+    return pdf
 
 def download_portfolio(request,pk):
-       context= returnPDF(pk)
-       pdf = render_to_pdf('portfolio/DownloadPortfolio.html', context)
+       pdf= returnPDF(pk)
 
        response = HttpResponse(pdf, content_type='application/pdf')
        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
@@ -167,15 +162,14 @@ def download_portfolio(request,pk):
 
 def sendemailpdf(request,pk):
     customer = get_object_or_404(Customer, pk=pk)
-    context = returnPDF(pk)
-    pdf = render_to_pdf_email('portfolio/DownloadPortfolio.html', context)
+    pdf = returnPDF(pk)
     cusEmail=customer.email
     sendEmail(pdf,cusEmail)
 
     return render(request, 'portfolio/emailsuccess.html')
 
 def sendEmail(pdf,email):
-     subject = "Portfolio Summary Page"
+     subject = "Application List "
      content = {}
      from_email = settings.EMAIL_HOST_USER
      message = EmailMultiAlternatives(subject=subject, body="Welcome.. Please find the attached portfolio pdf", from_email=from_email,
@@ -205,17 +199,8 @@ def customer_edit(request, pk):
 
 @login_required
 def customer_delete(request, pk):
-   print('customer delete')
-   cust = Customer.objects.get(id=pk)
-   print(cust)
-   print(cust.name_id)
-   print('before customer delete')
-   cust.delete()
-   print('after customer delete')
-   print('before user delete')
-   user = get_object_or_404(User, pk=cust.name_id)
-   user.delete()
-   print('after user delete')
+   customer = get_object_or_404(Customer, pk=pk)
+   customer.delete()
    return redirect('portfolio:customer_list')
 
 @login_required
@@ -232,13 +217,29 @@ def investment_delete(request, pk):
 
 @login_required
 def stock_list(request):
-   stocks = Stock.objects.filter(purchase_date__lte=timezone.now())
-   return render(request, 'portfolio/stock_list.html', {'stocks': stocks})
+    stocks = Stock.objects.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(stocks, 2)
+    try:
+        stocks_list = paginator.page(page)
+    except PageNotAnInteger:
+        stocks_list = paginator.page(1)
+    except EmptyPage:
+        stocks_list = paginator.page(paginator.num_pages)
+    return render(request, 'portfolio/stock_list.html', {'stocks': stocks_list})
 
 @login_required
 def investment_list(request):
-   investments = Investment.objects.filter(acquired_date__lte=timezone.now())
-   return render(request, 'portfolio/investment_list.html', {'investments': investments})
+   investments = Investment.objects.all()
+   page = request.GET.get('page', 1)
+   paginator = Paginator(investments, 5)
+   try:
+        investments_list = paginator.page(page)
+   except PageNotAnInteger:
+       investments_list = paginator.page(1)
+   except EmptyPage:
+       investments_list = paginator.page(paginator.num_pages)
+   return render(request, 'portfolio/investment_list.html', {'investments': investments_list})
 
 @login_required
 def stock_new(request):

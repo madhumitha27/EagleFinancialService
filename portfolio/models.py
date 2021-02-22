@@ -86,8 +86,7 @@ class Stock(models.Model):
         return self.current_stock_value() - self.initial_stock_value()
 
     def currency_rate(self):
-        url = 'https://v6.exchangerate-api.com/v6/8ec0ea3fc8a7dae5e6ae2918/latest/USD'
-        # main_api = 'https://free.currconv.com/api/v7/convert?q=INR_PHP&compact=ultra&apiKey=9d88d44ed0b4895bcb88'
+        url = 'https://v6.exchangerate-api.com/v6/160d0e560e9cd0e9f40c2e83/latest/USD'
         json_data = requests.get(url).json()
         open_price = float(json_data["conversion_rates"]["INR"])
         share_value = open_price
