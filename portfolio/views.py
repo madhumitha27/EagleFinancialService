@@ -42,7 +42,7 @@ class CustomerByNumber(APIView):
 def customer_list(request):
     customer = Customer.objects.all()
     page = request.GET.get('page', 1)
-    paginator = Paginator(customer, 2)
+    paginator = Paginator(customer, 5)
     try:
         customer_list = paginator.page(page)
     except PageNotAnInteger:
@@ -219,7 +219,7 @@ def investment_delete(request, pk):
 def stock_list(request):
     stocks = Stock.objects.all()
     page = request.GET.get('page', 1)
-    paginator = Paginator(stocks, 2)
+    paginator = Paginator(stocks, 5)
     try:
         stocks_list = paginator.page(page)
     except PageNotAnInteger:
